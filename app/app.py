@@ -1,83 +1,127 @@
-from data.extract_bottleneck_features import extract_Resnet50
-import flask
 from flask import Flask, render_template, request, send_file
 import re
 import sys 
 import os
-import base64
 import uuid
 import urllib
-from PIL import Image
 import numpy as np
-from tensorflow.keras.preprocessing.image import load_img , img_to_array
-from data.extract_bottleneck_features import extract_Resnet50
-import model.load
-from model.load import *
-
-# sys.path.append(os.path.abspath("../model"))
-# from load import * 
-# sys.path.append(os.path.abspath("../data"))
-# from extract_bottleneck_features import *
+import tensorflow as tf
+import keras
+from keras.models import load_model
+from keras.preprocessing import image
+from keras.applications.resnet50 import ResNet50, preprocess_input
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = 'static/images'
-'''
-Pre-processing for input images to match with model input format
-INPUT: PNG or JPG image
-OUTPUT: Convert to tensor
-'''
-directories = {
-    'data': '../data',
-    'model': '../model',
-}
 
-Resnet50_model = init()
-
-# # function to extract dog name from dog_names[index] (trim excess strings)
-# def get_proper_dog_name(path):
-#     return path.split('.')[1]
-
-# def Resnet50_predict_breed(img_path):
-#     bottleneck_feature = extract_Resnet50(path_to_tensor(img_path))
-#     predicted_vector = Resnet50_model.predict(bottleneck_feature)
-#     return get_proper_dog_name(dog_names[np.argmax(predicted_vector)])
-
-# def init(): 
-# 	#load weights into new model
-# 	model = load_model("model/weights.best.Resnet50.hdf5")
-# 	print("Loaded Model from disk")
-
-# 	return model
-
+dog_names=['Affenpinscher','Afghan hound','Airedale terrier','Akita','Alaskan malamute',
+'American eskimo dog','American foxhound','American staffordshire terrier',
+ 'American water spaniel','Anatolian shepherd dog','Australian cattle dog', 'Australian shepherd','Australian terrier',
+ 'Basenji','Basset hound', 'Beagle', 'Bearded collie', 'Beauceron', 'Bedlington terrier',
+ 'Belgian malinois', 'Belgian sheepdog', 'Belgian tervuren', 'Bernese mountain dog',
+ 'Bichon frise', 'Black and tan coonhound', 'Black russian terrier', 'Bloodhound',
+ 'Bluetick coonhound', 'Border collie', 'Border terrier', 'Borzoi',
+ 'Boston terrier', 'Bouvier des flandres', 'Boxer', 'Boykin spaniel',
+ 'Briard', 'Brittany', 'Brussels griffon', 'Bull terrier',
+ 'Bulldog', 'Bullmastiff', 'Cairn terrier', 'Canaan dog',
+ 'Cane corso', 'Cardigan welsh corgi', 'Cavalier king charles spaniel', 'Chesapeake bay retriever',
+ 'Chihuahua', 'Chinese crested', 'Chinese shar-pei', 'Chow chow',
+ 'Clumber spaniel', 'Cocker spaniel', 'Collie', 'Curly-coated retriever',
+ 'Dachshund', 'Dalmatian', 'Dandie dinmont terrier', 'Doberman pinscher',
+ 'Dogue de bordeaux', 'English cocker spaniel', 'English setter', 'English springer spaniel',
+ 'English toy spaniel', 'Entlebucher mountain dog', 'Field spaniel', 'Finnish spitz',
+ 'Flat-coated retriever', 'French bulldog', 'German pinscher', 'German shepherd dog',
+ 'German shorthaired pointer', 'German wirehaired pointer', 'Giant schnauzer', 'Glen of imaal terrier',
+ 'Golden retriever', 'Gordon setter', 'Great dane', 'Great pyrenees',
+ 'Greater swiss mountain dog', 'Greyhound', 'Havanese', 'Ibizan hound',
+ 'Icelandic sheepdog', 'Irish red and white setter', 'Irish setter', 'Irish terrier',
+ 'Irish water spaniel', 'Irish wolfhound', 'Italian greyhound', 'Japanese chin',
+ 'Keeshond', 'Kerry blue terrier', 'Komondor', 'Kuvasz',
+ 'Labrador retriever', 'Lakeland terrier', 'Leonberger', 'Lhasa apso',
+ 'Lowchen', 'Maltese', 'Manchester terrier', 'Mastiff',
+ 'Miniature schnauzer', 'Neapolitan mastiff', 'Newfoundland', 'Norfolk terrier',
+ 'Norwegian buhund', 'Norwegian elkhound', 'Norwegian lundehund', 'Norwich terrier',
+ 'Nova scotia duck tolling retriever', 'Old english sheepdog', 'Otterhound', 'Papillon',
+ 'Parson russell terrier', 'Pekingese', 'Pembroke welsh corgi', 'Petit basset griffon vendeen',
+ 'Pharaoh hound', 'Plott', 'Pointer', 'Pomeranian',
+ 'Poodle', 'Portuguese water dog', 'Saint bernard', 'Silky terrier',
+ 'Smooth fox terrier', 'Tibetan mastiff', 'Welsh springer spaniel', 'Wirehaired pointing griffon',
+ 'Xoloitzcuintli', 'Yorkshire terrier']
 
 ALLOWED_EXT = set(['jpg' , 'jpeg' , 'png' , 'jfif'])
 def allowed_file(filename):
     return '.' in filename and (filename.rsplit('.', 1)[1] in ALLOWED_EXT)
 
-classes = ['airplane' ,'automobile', 'bird' , 'cat' , 'deer' ,'dog' ,'frog', 'horse' ,'ship' ,'truck']
+'''
+**********************************************
+***********| ALL HELPER FUNCTIONS |***********
+**********************************************
+'''
 
-# def predict(filename , model):
-#     img = load_img(filename , target_size = (32 , 32))
-#     img = img_to_array(img)
-#     img = img.reshape(1 , 32 ,32 ,3)
-#     img = img.astype('float32')
-#     img = img/255.0
-#     result = model.predict(img)
-#     dict_result = {}
-#     for i in range(10):
-#         dict_result[result[0][i]] = classes[i]
-#     res = result[0]
-#     res.sort()
-#     res = res[::-1]
-#     prob = res[:3]
+def path_to_tensor(img_path):
+    # loads RGB image as PIL.Image.Image type
+    img = image.load_img(img_path, target_size=(224, 224))
+    # convert PIL.Image.Image type to 3D tensor with shape (224, 224, 3)
+    x = image.img_to_array(img)
+    # convert 3D tensor to 4D tensor with shape (1, 224, 224, 3) and return 4D tensor
+    return np.expand_dims(x, axis=0)
+
+def predict_dog(input):
+    dog_model = load_model("model/weights.best.Resnet50.hdf5")
+    graph_dog = tf.get_default_graph()
+
+    with graph_dog.as_default():
+        preds = dog_model.predict(input)
     
-#     prob_result = []
-#     class_result = []
-#     for i in range(3):
-#         prob_result.append((prob[i]*100).round(2))
-#         class_result.append(dict_result[prob[i]])
-#     return class_result , prob_result
+    return preds
+
+
+def extract_Resnet50(tensor):
+    ResNet50_model = ResNet50(weights='imagenet', include_top=False)
+    graph_RN50 = tf.get_default_graph()
+
+    with graph_RN50.as_default():
+        preds = ResNet50_model.predict(preprocess_input(tensor))
+    
+    return preds
+
+def get_dog_names(predicted_vector, top_n = 1):
+    if top_n == 1:
+        return dog_names[np.argmax(predicted_vector)]
+    else:
+        indices = np.argpartition(predicted_vector, -3)[-3:]
+        ind = indices[np.argsort(predicted_vector[indices])]
+        return np.array(dog_names)[ind] 
+
+def Resnet50_predict_breed(img_path):
+    tensor = path_to_tensor(img_path)  # 224, 224 ,3
+    print("path_to_tensor.shape:", tensor.shape)
+
+    bottleneck_feature = extract_Resnet50(tensor) # (1, 1, 1, 2048)
+    print("bottleneck.shape:", bottleneck_feature.shape)
+    keras.backend.clear_session()
+    
+    predicted_vector = predict_dog(bottleneck_feature)
+    keras.backend.clear_session()
+
+    # dummy_thicc = np.load('data/DogResnet50Data.npz')['test']
+    # predicted_vector = predict_dog(dummy_thicc)
+    print("output.shape:", predicted_vector.shape)
+    
+    return get_dog_names(predicted_vector)
+
+# Function to push to web format
+def predict(img_path):
+    prob_result = [1,2,3]
+    class_result = [Resnet50_predict_breed(img_path), "Default", "Default2"]
+    return class_result , prob_result
+
+'''
+**********************************************
+******************|END TEST|******************
+**********************************************
+'''
 
 '''
 app.Routes
@@ -103,21 +147,22 @@ def success():
                 output.write(resource.read())
                 output.close()
                 img = filename
-                # class_result , prob_result = predict(img_path , model)
-                # predictions = {
-                #       "class1":class_result[0],
-                #         "class2":class_result[1],
-                #         "class3":class_result[2],
-                #         "prob1": prob_result[0],
-                #         "prob2": prob_result[1],
-                #         "prob3": prob_result[2],
-                # }
+
+                class_result, prob_result = predict(img_path)
+                predictions = {
+                      "class1":class_result[0],
+                        "class2":class_result[1],
+                        "class3":class_result[2],
+                        "prob1": prob_result[0],
+                        "prob2": prob_result[1],
+                        "prob3": prob_result[2],
+                }
                 print('Image Link Saved', file=sys.stdout)
             except Exception as e : 
                 print(str(e))
                 error = 'This image from this site is not accesible or inappropriate input'
             if(len(error) == 0):
-                return  render_template('success.html' , img  = img , predictions = 'dog')# predictions)
+                return  render_template('success.html' , img  = img , predictions = predictions)
             else:
                 return render_template('index.html' , error = error) 
             
@@ -128,22 +173,25 @@ def success():
                 file.save(os.path.join(target_img , file.filename))
                 img_path = os.path.join(target_img , file.filename)
                 img = file.filename
-                # class_result , prob_result = predict(img_path , model)
-                # predictions = {
-                #       "class1":class_result[0],
-                #         "class2":class_result[1],
-                #         "class3":class_result[2],
-                #         "prob1": prob_result[0],
-                #         "prob2": prob_result[1],
-                #         "prob3": prob_result[2],
-                # }
+                # Test extract bottleneck_feature
+                print("Test filepath:", img_path)
+
+                class_result, prob_result = predict(img_path)
+                predictions = {
+                      "class1":class_result[0],
+                        "class2":class_result[1],
+                        "class3":class_result[2],
+                        "prob1": prob_result[0],
+                        "prob2": prob_result[1],
+                        "prob3": prob_result[2],
+                }
 
                 print('Uploaded image saved', file=sys.stdout)
             else:
                 error = "Please upload images of jpg , jpeg and png extension only"
 
             if(len(error) == 0):
-                return  render_template('success.html' , img  = img , predictions = 'dog') #predictions)
+                return  render_template('success.html' , img  = img , predictions = predictions)
             else:
                 return render_template('index.html' , error = error)
     else:
