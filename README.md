@@ -2,19 +2,32 @@
 
 ![Dog Breed Classification - Golden Retriever](Success_Scene.png)
 
-## Project Description
-This is the Capstone project for the Udacity Data Science Nanodegree course.
-You can check out the capstone report in the [Capstone Report](report/report.pdf) for the Project Definition, Motivation, Analysis, and Conclusion.
-
-For the library used, please take a look at [the requirement.txt file](requirements.txt)
-
 ## Content:
+- [Project Description](#project-description)
 - [Files](#files)
 - [Installation Instruction](#installation-instruction)
 - [Use Instruction](#use-instruction)
 - [Environment Setup](#environment-setup)
 
 Note: If you want to try out the Notebook, please download data as instructed in the notebook. There is code to download and use the data. 
+
+The Notebook contains the report required for this project.
+
+## Project Description
+This is the Capstone project for the Udacity Data Science Nanodegree course.
+For the library used, please take a look at [the requirement.txt file](requirements.txt)
+
+### Project Overview
+I have a dog at home and wanted to identify what dog breed looks the most like him (since he is a mixed breed).
+
+### Problem Statement
+Each major breed has their own sub-breeds and identifying features. I have a hard time identifying dog breeds due to the sheer number of features and experience required to accurately identify these canines’ ancestry, such as fur color, texture, head shape, ear shape, and facial features. It is even more difficult if we can only see images of dogs. 
+The problem is that with traditional Machine Learning models, it is difficult to identify certain features of 133 breeds of dogs. Thus, this will require some research into Convolution Neural Network and Transfer Learning.
+My main objective is to train and evaluate a CNN model that takes a colored image of a dog as an input and predict the breed with the highest accuracy possible. I will simply evaluate some models (VGG16, ResNet50, my own model) and gain a basic understanding of Computer Vision in Data Science.
+
+### Metrics
+Since this is a classification problem, evaluation is based on accuracy. Typically, the model is evaluated on the test set and in percentage (e.g. 80.9%).
+
 
 ## Files
 ```
@@ -55,8 +68,6 @@ Dog-breed-detection
 └───notebook
 │   │   dog_app.ipynb
 │
-└───report
-    │   report.pdf
 ```
 
 ## Installation Instruction
