@@ -90,8 +90,8 @@ After you have uploaded an appropriate image, press "Upload" and wait for the re
 
 Note: This app does not yet have the ability to scan and detect human faces nor detect dogs due to versioning issues. Though the full code is in the [Jupyter notebook](notebook/dog_app.ipynb) if you want to try.
 
-GIF: demo
-![](ezgif.com-gif-maker.gif)
+
+![Quick Demo of the app with a beautiful golden retriever](ezgif.com-gif-maker.gif)
 
 ## Additional Environment Setup
 **NOTE: I use Python 3.6. All versions of packages should be in the [requirements.txt](requirements.txt) file. FYI I use macOS**
