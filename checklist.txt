@@ -1,0 +1,24 @@
+This is a checklist for things I have to do to complete this project
+Notebook:
+[v] Train and evaluate model
+[v] Setup Flask application and Git and download resources
+
+Flask:
+[v] Have input section for image files. Backend is able to receive and store file
+[v] Build ETL Pipeline
+    - [v] Transform image to tensor (see the Notebook)
+    - [v] Use model to predict
+    - [v] Show output result on webpage
+    - [ ] Delete img file after used
+[ ] (Optional) Additional *flare* to the UI
+
+Git:
+[ ] Write up Report in README.md by the format from Rubric
+    - [v] the libraries used, 
+    - [ ] the motivation for the project, 
+    - [v] the files in the repository with a small description of each, 
+    - [v] and necessary acknowledgements. 
+    - [ ] the Project Definition, Analysis, and Conclusion (See Rubric and examples)
+
+(Optional) Deployment:
+[ ] Deploy Flask app to Heroku

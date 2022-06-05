@@ -32,7 +32,7 @@
       type="text/javascript"
       src="{{ url_for('static', filename= 'javascript/index.js')}}"
       defer
-    ></script>moni
+    ></script>
 
     <title>What dog breed are you?</title>
   </head>
@@ -63,30 +63,6 @@
                 <button class="btn btn-success btn-lg">Upload</button>
               </form>
             </div>
-
-            <div class="uploadOR">
-              <span>OR</span>
-            </div>
-
-            <div class="upload-link">
-              <form
-                class="link-form"
-                action="/success"
-                method="post"
-                ,
-                enctype="multipart/form-data"
-              >
-                <input
-                  class="link-form-input"
-                  type="text"
-                  ,maxlength="1000"
-                  ,
-                  name="link"
-                  placeholder="Paste the image URL(not the site address)"
-                />
-                <button class="btn btn-success btn-lg">Proceed</button>
-              </form>
-            </div>
             <div class="header-content-sub">
               <p
                 style="text-align: center; margin-top: 15px; color: red"
@@ -103,15 +79,16 @@
                 style="text-align: center; color: white"
                 class="header-content-info"
               >
-                The model was trained on __ dataset and the model only performs
-                better when the following categories are provided as input
+                The model was trained on Dog Breed dataset from Udacity Data Science Course and the model only performs
+                better when the following dog breeds are provided as input:
               </p>
             </div>
-            <div class="header-content-sub">
-              <p
-                style="text-align: center; color: orange"
+            <div class="header-content-sub" style="text-align:center; margin:auto; height: 300px; width:300px; overflow:auto; border: 2px solid white">
+              <div
+              id="dog-names"
+                style="text-align: center; color: orange;"
                 class="header-content-info"
-              ></p>
+              ></div>
             </div>
           </div>
         </div>

@@ -86,35 +86,31 @@ def extract_Resnet50(tensor):
     
     return preds
 
-def get_dog_names(predicted_vector, top_n = 1):
-    if top_n == 1:
-        return dog_names[np.argmax(predicted_vector)]
-    else:
-        indices = np.argpartition(predicted_vector, -3)[-3:]
-        ind = indices[np.argsort(predicted_vector[indices])]
-        return np.array(dog_names)[ind] 
-
 def Resnet50_predict_breed(img_path):
     tensor = path_to_tensor(img_path)  # 224, 224 ,3
-    print("path_to_tensor.shape:", tensor.shape)
+    # print("path_to_tensor.shape:", tensor.shape)
 
     bottleneck_feature = extract_Resnet50(tensor) # (1, 1, 1, 2048)
-    print("bottleneck.shape:", bottleneck_feature.shape)
     keras.backend.clear_session()
+    # print("bottleneck.shape:", bottleneck_feature.shape)
     
-    predicted_vector = predict_dog(bottleneck_feature)
+    predicted_vector = predict_dog(bottleneck_feature) # (1, 133) for 133 breeds
     keras.backend.clear_session()
-
-    # dummy_thicc = np.load('data/DogResnet50Data.npz')['test']
-    # predicted_vector = predict_dog(dummy_thicc)
     print("output.shape:", predicted_vector.shape)
     
-    return get_dog_names(predicted_vector)
+    return predicted_vector
 
 # Function to push to web format
 def predict(img_path):
-    prob_result = [1,2,3]
-    class_result = [Resnet50_predict_breed(img_path), "Default", "Default2"]
+    predicted_vector = Resnet50_predict_breed(img_path)
+    
+    indices = np.argpartition(predicted_vector, -3)[0][-3:]
+    print(indices)
+    print("AYO", predicted_vector[0][indices])
+    sorted_indices = indices[np.argsort(predicted_vector[0][indices])][::-1] # 3 indices, ascending
+
+    class_result = np.array(dog_names)[sorted_indices] 
+    prob_result = predicted_vector[0][sorted_indices] * 100
     return class_result , prob_result
 
 '''
@@ -136,37 +132,7 @@ def success():
     error = ''
     target_img = os.path.join(os.getcwd() , 'app/'+UPLOAD_FOLDER)
     if request.method == 'POST':
-        if(request.form):
-            link = request.form.get('link')
-            try :
-                resource = urllib.request.urlopen(link)
-                unique_filename = str(uuid.uuid4())
-                filename = unique_filename+".jpg"
-                img_path = os.path.join(target_img , filename)
-                output = open(img_path , "wb")
-                output.write(resource.read())
-                output.close()
-                img = filename
-
-                class_result, prob_result = predict(img_path)
-                predictions = {
-                      "class1":class_result[0],
-                        "class2":class_result[1],
-                        "class3":class_result[2],
-                        "prob1": prob_result[0],
-                        "prob2": prob_result[1],
-                        "prob3": prob_result[2],
-                }
-                print('Image Link Saved', file=sys.stdout)
-            except Exception as e : 
-                print(str(e))
-                error = 'This image from this site is not accesible or inappropriate input'
-            if(len(error) == 0):
-                return  render_template('success.html' , img  = img , predictions = predictions)
-            else:
-                return render_template('index.html' , error = error) 
-            
-        elif (request.files):
+        if (request.files):
             file = request.files['file']
             print(file)
             if file and allowed_file(file.filename):
