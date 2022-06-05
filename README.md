@@ -11,7 +11,7 @@
 
 Note: If you want to try out the Notebook, please download data as instructed in the notebook. There is code to download and use the data. 
 
-The Notebook contains the report required for this project.
+The Notebook contains the [REPORT](notebook/dog_app.ipynb) required for this project.
 
 ## Project Description
 This is the Capstone project for the Udacity Data Science Nanodegree course.
